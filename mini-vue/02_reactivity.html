@@ -5,20 +5,24 @@
     <script>
       const Vue = {
         createApp(config) {
-          // 编译过程
+          // 编译过程，实际是个compose函数，这里先跳过模板编译，直接生成固定的模板，content为setup返回的对象
           const compile = (template) => (content, dom) => {
             // 重新渲染
-            dom.innerText = "";
-            input = document.createElement("input");
-            input.addEventListener("keyup", function () {
+            dom.innerText = '';
+            input = document.createElement('input');
+            // 给input添加监听事件
+            input.addEventListener('keyup', function () {
+              // 赋值触发响应式
               content.state.message = this.value;
             });
-            input.setAttribute("value", content.state.message);
+            // 设置新值
+            input.setAttribute('value', content.state.message);
             dom.appendChild(input);
 
-            let button = dom.querySelector("button");
-            button = document.createElement("button");
-            button.addEventListener("click", () => {
+            let button = dom.querySelector('button');
+            button = document.createElement('button');
+            button.addEventListener('click', () => {
+              // 当前作用域下执行click函数
               return content.click.apply(content.state);
             });
             button.innerText = content.state.message;
@@ -33,11 +37,10 @@
               const dom = document.querySelector(container);
 
               const setupResult = config.setup();
-              // 修改
-              // effective = () => render(setupResult, dom);
+              // 副作用依赖收集：立刻执行一次副作用函数，并会访问到content.state.message，之前已经执行了响应式，这里进行副作用依赖收集
+              // 当content.state.message更新的时候，自动重新执行render函数，重新渲染
               watchEffect(() => render(setupResult, dom));
-
-              render(setupResult, dom);
+              // render(setupResult, dom);
             },
           };
         },
@@ -66,17 +69,18 @@
           //   }
           // );
           const state = reactive({
-            message: "Hello Vue 3!!",
+            message: 'Hello Vue 3!!',
           });
 
           const click = () => {
-            state.message = state.message.split("").reverse().join("");
+            state.message = state.message.split('').reverse().join('');
           };
           return { state, click };
         },
       };
       const { createApp } = Vue;
-      createApp(App).mount("#app");
+      // 执行createApp并执行里面的挂载函数
+      createApp(App).mount('#app');
     </script>
   </body>
 </html>

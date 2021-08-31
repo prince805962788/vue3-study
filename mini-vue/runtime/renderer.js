@@ -23,8 +23,9 @@ function patchProp(el, key, prevValue, nextValue) {
   // 1. 如果前面2个值是 on 的话
   // 2. 就认为它是一个事件
   // 3. on 后面的就是对应的事件名
-  if (key.startsWith("on")) {
+  if (key.startsWith('on')) {
     const eventName = key.slice(2).toLocaleLowerCase();
+    // 添加监听事件，等效于document.createElement('button').addEventListener('click', ()=>{})
     el.addEventListener(eventName, nextValue);
   } else {
     if (nextValue === null) {
@@ -36,6 +37,8 @@ function patchProp(el, key, prevValue, nextValue) {
 }
 
 function diff(v1, v2) {
+  console.log('1:', v1);
+  console.log('2:', v2);
   // 1. 如果 tag 都不一样的话，直接替换
   // 2. 如果 tag 一样的话
   //    1. 要检测 props 哪些有变化
@@ -43,6 +46,7 @@ function diff(v1, v2) {
   const { props: oldProps, children: oldChildren = [] } = v1;
   const { props: newProps, children: newChildren = [] } = v2;
   if (v1.tag !== v2.tag) {
+    //v1的节点直接替换为v2
     v1.replaceWith(createElement(v2.tag));
   } else {
     const el = (v2.el = v1.el);
@@ -64,30 +68,26 @@ function diff(v1, v2) {
       });
     }
     // 对比 children
-
-    // newChildren -> string
-    // oldChildren -> string   oldChildren -> array
-
-    // newChildren -> array
-    // oldChildren -> string   oldChildren -> array
-    if (typeof newChildren === "string") {
-      if (typeof oldChildren === "string") {
+    if (typeof newChildren === 'string') {
+      if (typeof oldChildren === 'string') {
         if (newChildren !== oldChildren) {
+          // 文本替换
           setText(el, newChildren);
         }
       } else if (Array.isArray(oldChildren)) {
-        // 把之前的元素都替换掉
+        // 把之前的元素都替换为文本
         v1.el.textContent = newChildren;
       }
     } else if (Array.isArray(newChildren)) {
-      if (typeof oldChildren === "string") {
+      if (typeof oldChildren === 'string') {
         // 清空之前的数据
-        n1.el.innerHTML = "";
+        n1.el.innerHTML = '';
         // 把所有的 children mount 出来
         newChildren.forEach((vnode) => {
           mountElement(vnode, el);
         });
       } else if (Array.isArray(oldChildren)) {
+        // 新老节点都是数组的情况下，需要做对比
         // a, b, c, d, e -> new
         // a1,b1,c1,d1 -> old
         // 如果 new 的多的话，那么创建一个新的
@@ -95,11 +95,12 @@ function diff(v1, v2) {
         // a, b, c -> new
         // a1,b1,c1,d1 -> old
         // 如果 old 的多的话，那么把多的都删除掉
+        // 取新旧节点中children最长的作为遍历长度
         const length = Math.min(newChildren.length, oldChildren.length);
         for (let i = 0; i < length; i++) {
           const oldVnode = oldChildren[i];
           const newVnode = newChildren[i];
-          // 可以十分复杂
+          // 递归对比
           diff(oldVnode, newVnode);
         }
 
@@ -121,15 +122,15 @@ function diff(v1, v2) {
   }
 }
 
-
 function mountElement(vnode, container) {
-  // 渲染成真实的 dom 节点
+  // 根据vnode的tag渲染成真实的 dom 节点
   const el = (vnode.el = createElement(vnode.tag));
 
   // 处理 props
   if (vnode.props) {
     for (const key in vnode.props) {
       const val = vnode.props[key];
+      // 处理props中的属性和事件
       patchProp(vnode.el, key, null, val);
     }
   }
@@ -140,9 +141,10 @@ function mountElement(vnode, container) {
       mountElement(v, el);
     });
   } else {
+    // 如果是文本节点，创建一个文本并插入到el下
     insert(createText(vnode.children), el);
   }
 
-  // 插入到视图内
+  // 插入到容器内
   insert(el, container);
 }
