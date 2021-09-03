@@ -37,8 +37,6 @@ function patchProp(el, key, prevValue, nextValue) {
 }
 
 function diff(v1, v2) {
-  console.log('1:', v1);
-  console.log('2:', v2);
   // 1. 如果 tag 都不一样的话，直接替换
   // 2. 如果 tag 一样的话
   //    1. 要检测 props 哪些有变化

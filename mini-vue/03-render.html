@@ -11,7 +11,7 @@
             mount: function (container) {
               const dom = document.querySelector(container);
               // 生成渲染函数
-              // 获取渲染对象，并执行render进行渲染
+              // 获取渲染对象，并且在setup中执行了响应式
               const setupResult = config.setup();
 
               let isMounted = false;
@@ -25,7 +25,7 @@
                   dom.innerHTML = '';
                   // 标记为已挂载
                   isMounted = true;
-                  // render函数渲染子树
+                  // render函数渲染子树，render过程会访问到设置了响应式的变量，进而进行依赖收集
                   const subTree = config.render(setupResult);
                   // 当前子树赋值给旧子树，用于下次diff对比
                   prevSubTree = subTree;
