@@ -1,5 +1,7 @@
 import { extend } from "../shared";
 
+let activeEffect; //当前的副作用函数
+let shouldTrack; //是否应该收集依赖
 class ReactiveEffect {
   private _fn: any;
   deps = [];
@@ -11,10 +13,20 @@ class ReactiveEffect {
     this.scheduler = scheduler;
   }
   run() {
+    // 已经收集过依赖了，不在收集，直接执行
+    if (!this.active) {
+      return this._fn();
+    }
+    // 还没有收集过依赖，shouldTrack设置为true，执行_fn()，访问并允许后续的依赖收集
+    shouldTrack = true;
     // 执行的时候给全局的 activeEffect 赋值
     // 利用全局属性来获取当前的 effect
     activeEffect = this;
-    return this._fn();
+    // 执行_fn()，进行依赖收集，并获取返回结果
+    const result = this._fn();
+    // 已经进行过依赖收集，shouldTrack设置为false，不在允许后续访问的时候继续依赖收集
+    shouldTrack = false;
+    return result;
   }
   stop() {
     // 为了防止重复的调用，执行 stop 逻辑
@@ -34,6 +46,7 @@ function cleanupEffect(effect) {
   effect.deps.forEach((dep: any) => {
     dep.delete(effect);
   });
+  effect.deps.length = 0;
 }
 const targetMap = new Map();
 //依赖收集
@@ -56,7 +69,7 @@ export function track(target, key) {
   activeEffect.deps.push(dep); //当前副作用函数反向收集
 }
 export function isTracking() {
-  return activeEffect !== undefined;
+  return shouldTrack && activeEffect !== undefined;
 }
 //执行依赖收集中的副作用函数
 export function trigger(target, key) {
@@ -72,7 +85,6 @@ export function trigger(target, key) {
   }
 }
 
-let activeEffect; //当前的副作用函数
 export function effect(fn, options: any = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler);
   extend(_effect, options); //里面的onStop赋值传递给_effect
