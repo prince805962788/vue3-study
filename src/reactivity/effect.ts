@@ -65,6 +65,12 @@ export function track(target, key) {
     dep = new Set();
     depsMap.set(key, dep);
   }
+  trackEffect(dep);
+}
+// track在reactive,ref依赖收集逻辑复用
+export function trackEffect(dep) {
+  // dep中已存在，那么就不添加了
+  if (dep.has(activeEffect)) return;
   dep.add(activeEffect); // 把当前副作用函数放入访问的此对象的依赖收集中
   activeEffect.deps.push(dep); //当前副作用函数反向收集
 }
@@ -76,15 +82,19 @@ export function trigger(target, key) {
   let depsMap = targetMap.get(target);
   let dep = depsMap.get(key);
 
+  triggerEffect(dep);
+}
+// trigger在reactive,ref依赖收集逻辑复用
+export function triggerEffect(dep) {
   for (const effect of dep) {
     if (effect.scheduler) {
+      // 存在调度程序scheduler，执行
       effect.scheduler();
     } else {
       effect.run();
     }
   }
 }
-
 export function effect(fn, options: any = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler);
   extend(_effect, options); //里面的onStop赋值传递给_effect
