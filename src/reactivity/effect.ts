@@ -2,7 +2,7 @@ import { extend } from "../shared";
 
 let activeEffect; //当前的副作用函数
 let shouldTrack; //是否应该收集依赖
-class ReactiveEffect {
+export class ReactiveEffect {
   private _fn: any;
   deps = [];
   active = true;

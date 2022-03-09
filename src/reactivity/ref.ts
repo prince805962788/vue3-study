@@ -8,6 +8,7 @@ class RefImpl {
   private _value: any;
   public dep;
   private _rawValue: any;
+  public __is_isRef = true;
   constructor(value) {
     // 原始对象，用于后续的对比操作
     this._rawValue = value;
@@ -42,4 +43,28 @@ function trackRefValue(ref) {
 
 export function ref(value) {
   return new RefImpl(value);
+}
+
+export function isRef(value) {
+  return !!value.__is_isRef;
+}
+// 返回原始数据
+export function unRef(ref) {
+  return isRef(ref) ? ref.value : ref;
+}
+// 返回一个代理对象，读取里面的ref数据，转为原始数据
+export function proxyRefs(objectWithRefs) {
+  return new Proxy(objectWithRefs, {
+    get(target, key) {
+      return unRef(Reflect.get(target, key));
+    },
+    set(target, key, value) {
+      // 新值是ref类型，原有值不是ref类型
+      if (isRef(target[key]) && !isRef(value)) {
+        return (target[key].value = value);
+      } else {
+        return Reflect.set(target, key, value);
+      }
+    },
+  });
 }
