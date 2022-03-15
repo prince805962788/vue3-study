@@ -4,8 +4,12 @@ export function render(vnode, container) {
   patch(vnode, container);
 }
 function patch(vnode, container) {
+  // todo 判断vnode是不是一个element
+  processElement();
   processComponent(vnode, container);
 }
+// 处理元素类型
+function processElement() {}
 // 处理组件
 function processComponent(vnode: any, container: any) {
   mountComponent(vnode, container);

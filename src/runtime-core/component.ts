@@ -32,7 +32,7 @@ function handlerSetupResult(instance, setupResult: any) {
 // 完成setup处理
 function finishComponentSetup(instance) {
   const Component = instance.type;
-  if (!Component.render) {
+  if (Component.render) {
     instance.render = Component.render;
   }
 }
