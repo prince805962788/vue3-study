@@ -1,15 +1,24 @@
+
+import { shallowReadonly } from "../reactivity/reactive";
+import { emit } from "./componentEmit";
+import { initProps } from "./componentProps";
 import { PublicInstanceProxyHandlers } from "./componentsPublicInstance";
 export function createComponentInstance(vnode) {
   const component = {
     vnode,
     type: vnode.type,
     setupState: {},
+    props: {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    emit: () => {}
   };
+
+  component.emit = emit.bind(null, component) as any;
   return component;
 }
 // 处理setup的组件
 export function setupComponent(instance) {
-  // initProps()
+  initProps(instance, instance.vnode.props);
   // initSlots()
 
   setupStatefulComponent(instance);
@@ -20,11 +29,16 @@ function setupStatefulComponent(instance: any) {
 
   // 给instance下的一个{_: instance}对象设置代理，当访问这个对象的某个key值的时候，就会去setup返回的对象中找个key，如果存在，返回对应的值
   const proxy = { _: instance };
+
   instance.proxy = new Proxy(proxy, PublicInstanceProxyHandlers);
   // 从组件中取到setup
   const { setup } = Component;
+
   if (setup) {
-    const setupResult = setup();
+    // props只读，使用shallowReadonly
+    const setupResult = setup(shallowReadonly(instance.props), {
+      emit: instance.emit
+    });
 
     handlerSetupResult(instance, setupResult);
   }
@@ -39,6 +53,7 @@ function handlerSetupResult(instance, setupResult: any) {
 // 完成setup处理
 function finishComponentSetup(instance) {
   const Component = instance.vnode.type;
+
   if (Component.render) {
     instance.render = Component.render;
   }

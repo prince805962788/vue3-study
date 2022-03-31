@@ -1,0 +1,47 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "rules": {
+        "semi": ["error", "always"],//禁止多余的冒号
+        "eqeqeq": "error",//必须使用全等
+        "require-await": "error",//禁止使用不带 await 表达式的 async 函数
+        // "no-shadow": "error",//禁止变量声明与外层作用域的变量同名
+        "new-cap": "error",//函数名首行大写必须使用new方式调用，首行小写必须用不带new方式调
+        "new-parens": "error",//new时必须加小括号
+        "no-trailing-spaces": "error",//一行结束后面不要有空格
+        "arrow-spacing": "error",//=>的前/后括号
+        "no-const-assign": "error",//禁止修改const声明的变量
+        "no-useless-constructor": "error",//禁用不必要的构造函数
+        "no-var": "error",//要求使用 let 或 const 而不是 var
+        "prefer-const": "error",//要求使用 const 声明那些声明后不再被修改的变量
+        "keyword-spacing": "error",//强制在关键字前后使用一致的空格
+        "use-isnan": "error",//禁止比较时使用NaN，只能用isNaN()
+        "no-irregular-whitespace":"error",//不能有不规则的空格
+        "default-case": "error",//switch语句最后必须有default
+        "prefer-spread": "error",//首选展开运算
+        // "prefer-reflect": "error",//首选Reflect的方法
+        "space-before-blocks": "error",//强制在块之前使用一致的空格
+        "spaced-comment":"error",//强制在注释中 // 或 /* 使用一致的空格
+        "space-infix-ops": "error",//要求操作符周围有空格
+        "space-in-parens": "error",// 分号前的空格
+        "block-spacing": "error",// 分号后的空格
+        "newline-after-var": "error", // 变量声明后是否需要空一行
+        "array-bracket-spacing": [ "error","always" ],// 数组括号左右空格
+        "object-curly-spacing": [ "error","always" ],// 对象括号左右空格
+        "comma-spacing": [ "error", { "before": false, "after": true } ] // 变量声明、数组字面量、对象字面量、函数参数 和 序列中的逗号左右的空格的一致性
+    }
+}
